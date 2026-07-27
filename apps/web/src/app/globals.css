@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --sidebar-width: 256px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+}
+
+@layer components {
+  /* ─── Buttons ────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-brand-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-all duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98];
+  }
+
+  /* ─── Cards ──────────────────────────────────────────── */
+  .card {
+    @apply rounded-2xl bg-white shadow-sm ring-1 ring-slate-100;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:ring-brand-200 cursor-pointer;
+  }
+
+  /* ─── Form controls ──────────────────────────────────── */
+  .input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 disabled:text-slate-500;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-slate-700 mb-1.5;
+  }
+
+  .select {
+    @apply input appearance-none bg-white cursor-pointer;
+  }
+
+  .textarea {
+    @apply input min-h-[120px] resize-y;
+  }
+
+  /* ─── Badges ─────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  /* ─── Page layout ────────────────────────────────────── */
+  .page-container {
+    @apply min-h-screen bg-slate-50;
+  }
+
+  .main-content {
+    @apply ml-0 lg:ml-[var(--sidebar-width)] min-h-screen transition-all duration-300 pt-16 lg:pt-0;
+  }
+
+  .content-wrapper {
+    @apply mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  /* ─── Sidebar ────────────────────────────────────────── */
+  .sidebar {
+    @apply fixed inset-y-0 left-0 z-50 w-[var(--sidebar-width)] bg-slate-900 flex flex-col transform transition-transform duration-300;
+  }
+
+  .sidebar-closed {
+    @apply -translate-x-full lg:translate-x-0;
+  }
+
+  .sidebar-open {
+    @apply translate-x-0;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-all duration-150 hover:bg-white/10 hover:text-white;
+  }
+
+  .sidebar-link.active {
+    @apply bg-brand-600/20 text-brand-400;
+  }
+
+  /* ─── Priority pulse animation for critical ──────────── */
+  .critical-pulse {
+    animation: criticalPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes criticalPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
+  }
+
+  /* ─── Scrollbar ──────────────────────────────────────── */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 2px;
+  }
+
+  /* ─── Timeline / Chat ────────────────────────────────── */
+  .timeline-item {
+    @apply relative flex gap-3;
+  }
+
+  .timeline-item::before {
+    content: '';
+    @apply absolute left-4 top-8 bottom-0 w-px bg-slate-100;
+  }
+
+  .timeline-item:last-child::before {
+    display: none;
+  }
+
+  /* ─── Skeleton loading ───────────────────────────────── */
+  .skeleton {
+    @apply animate-pulse bg-slate-100 rounded-lg;
+  }
+
+  /* ─── Status indicator dot ───────────────────────────── */
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

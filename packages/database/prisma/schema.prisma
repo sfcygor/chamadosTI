@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// NOTE: SQLite does not support native enums, so we use String with @default
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senhaHash    String
+  papel        String   @default("COLABORADOR") // COLABORADOR | AGENTE | ADMIN
+  setor        String?
+  ativo        Boolean  @default(true)
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  // Relations
+  ticketsCriados    Ticket[]       @relation("TicketCriadoPor")
+  ticketsAtribuidos Ticket[]       @relation("TicketAtribuidoA")
+  comentarios       Comment[]
+  priorityLogs      PriorityLog[]
+  refreshTokens     RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  criadoEm  DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model Category {
+  id               String   @id @default(cuid())
+  nome             String   @unique
+  slaHoras         Int      @default(24)
+  ativo            Boolean  @default(true)
+  criadoEm         DateTime @default(now())
+
+  // Relations
+  tickets Ticket[]
+
+  @@map("categories")
+}
+
+model Ticket {
+  id                 String    @id @default(cuid())
+  titulo             String
+  descricao          String
+  prioridade         String    @default("NAO_CLASSIFICADA") // NAO_CLASSIFICADA | BAIXA | MEDIA | ALTA | CRITICA
+  status             String    @default("NOVO")             // NOVO | EM_ANDAMENTO | AGUARDANDO_USUARIO | RESOLVIDO | FECHADO
+  descricaoSolucao   String?
+  criadoEm           DateTime  @default(now())
+  atualizadoEm       DateTime  @updatedAt
+  resolvidoEm        DateTime?
+  fechadoEm          DateTime?
+  assumidoEm         DateTime?
+
+  // Foreign Keys
+  categoriaId  String
+  criadoPorId  String
+  atribuidoAId String?
+
+  // Relations
+  categoria    Category      @relation(fields: [categoriaId], references: [id])
+  criadoPor    User          @relation("TicketCriadoPor", fields: [criadoPorId], references: [id])
+  atribuidoA   User?         @relation("TicketAtribuidoA", fields: [atribuidoAId], references: [id])
+  comentarios  Comment[]
+  anexos       Attachment[]
+  priorityLogs PriorityLog[]
+
+  @@map("tickets")
+}
+
+model PriorityLog {
+  id                 String   @id @default(cuid())
+  prioridadeAnterior String
+  novaPrioridade     String
+  motivo             String?
+  criadoEm           DateTime @default(now())
+
+  // Foreign Keys
+  ticketId      String
+  alteradoPorId String
+
+  // Relations
+  ticket      Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  alteradoPor User   @relation(fields: [alteradoPorId], references: [id])
+
+  @@map("priority_logs")
+}
+
+model Comment {
+  id            String   @id @default(cuid())
+  texto         String
+  isNotaInterna Boolean  @default(false)
+  criadoEm      DateTime @default(now())
+
+  // Foreign Keys
+  ticketId String
+  autorId  String
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  autor  User   @relation(fields: [autorId], references: [id])
+
+  @@map("comments")
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  nomeArquivo String
+  url         String
+  tamanho     Int?
+  mimeType    String?
+  criadoEm   DateTime @default(now())
+
+  // Foreign Keys
+  ticketId String
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
