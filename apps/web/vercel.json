@@ -1,9 +1,0 @@
-{
-  "framework": "nextjs",
-  "buildCommand": "cd ../.. && npm run build --filter=@atendeti/web",
-  "installCommand": "cd ../.. && npm install",
-  "outputDirectory": ".next",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@next_public_api_url"
-  }
-}
