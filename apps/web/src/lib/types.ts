@@ -40,6 +40,7 @@ export interface Ticket {
 
 export interface Comment {
   id: string;
+  ticketId: string;
   texto: string;
   isNotaInterna: boolean;
   criadoEm: string;
