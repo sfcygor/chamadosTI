@@ -6,15 +6,31 @@
 @layer base {
   :root {
     --sidebar-width: 256px;
+    --bg-page:      #f8fafc;
+    --bg-surface:   #ffffff;
+    --bg-muted:     #f1f5f9;
+    --text-primary: #0f172a;
+    --text-muted:   #64748b;
+    --border:       #e2e8f0;
   }
 
-  html {
-    scroll-behavior: smooth;
+  .dark {
+    --bg-page:      #0f172a;
+    --bg-surface:   #1e293b;
+    --bg-muted:     #334155;
+    --text-primary: #f1f5f9;
+    --text-muted:   #94a3b8;
+    --border:       #334155;
   }
+
+  html { scroll-behavior: smooth; }
 
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    @apply font-sans antialiased;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     font-feature-settings: "cv11", "ss01";
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -25,51 +41,59 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 transition-all duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm ring-1 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border-color: var(--border);
   }
+  .btn-secondary:hover { background-color: var(--bg-muted); }
 
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-red-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-all duration-150 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.98];
+    color: var(--text-muted);
   }
+  .btn-ghost:hover { background-color: var(--bg-muted); color: var(--text-primary); }
 
   /* ─── Cards ──────────────────────────────────────────── */
   .card {
-    @apply rounded-2xl bg-white shadow-sm ring-1 ring-slate-100;
+    @apply rounded-2xl shadow-sm;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
   }
 
   .card-hover {
-    @apply card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:ring-brand-200 cursor-pointer;
+    @apply card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer;
   }
+  .card-hover:hover { border-color: #10b981; }
 
   /* ─── Form controls ──────────────────────────────────── */
   .input {
-    @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50 disabled:text-slate-500;
+    @apply w-full rounded-xl px-3.5 py-2.5 text-sm placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:ring-2 disabled:opacity-60;
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
   }
+  .input:focus { border-color: #10b981; --tw-ring-color: rgba(16,185,129,0.15); }
 
   .input-label {
-    @apply block text-sm font-medium text-slate-700 mb-1.5;
+    @apply block text-sm font-medium mb-1.5;
+    color: var(--text-muted);
   }
 
-  .select {
-    @apply input appearance-none bg-white cursor-pointer;
-  }
-
-  .textarea {
-    @apply input min-h-[120px] resize-y;
-  }
+  .select { @apply input appearance-none cursor-pointer; }
+  .textarea { @apply input min-h-[120px] resize-y; }
 
   /* ─── Badges ─────────────────────────────────────────── */
-  .badge {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold;
-  }
+  .badge { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
 
   /* ─── Page layout ────────────────────────────────────── */
   .page-container {
-    @apply min-h-screen bg-slate-50;
+    @apply min-h-screen;
+    background-color: var(--bg-page);
   }
 
   .main-content {
@@ -82,81 +106,208 @@
 
   /* ─── Sidebar ────────────────────────────────────────── */
   .sidebar {
-    @apply fixed inset-y-0 left-0 z-50 w-[var(--sidebar-width)] bg-slate-900 flex flex-col transform transition-transform duration-300;
+    @apply fixed inset-y-0 left-0 z-50 w-[var(--sidebar-width)] flex flex-col transform transition-transform duration-300;
+    background-color: #0f172a;
   }
 
-  .sidebar-closed {
-    @apply -translate-x-full lg:translate-x-0;
-  }
-
-  .sidebar-open {
-    @apply translate-x-0;
-  }
+  .dark .sidebar { background-color: #020617; }
+  .sidebar-closed { @apply -translate-x-full lg:translate-x-0; }
+  .sidebar-open   { @apply translate-x-0; }
 
   .sidebar-link {
     @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition-all duration-150 hover:bg-white/10 hover:text-white;
   }
 
-  .sidebar-link.active {
-    @apply bg-brand-600/20 text-brand-400;
-  }
+  .sidebar-link.active { @apply bg-brand-600/20 text-brand-400; }
 
   /* ─── Priority pulse animation for critical ──────────── */
-  .critical-pulse {
-    animation: criticalPulse 2s ease-in-out infinite;
-  }
+  .critical-pulse { animation: criticalPulse 2s ease-in-out infinite; }
 
   @keyframes criticalPulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
+    50%       { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15); }
   }
 
   /* ─── Scrollbar ──────────────────────────────────────── */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 2px;
-  }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 2px; }
+  .dark .scrollbar-thin { scrollbar-color: #475569 transparent; }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #475569; }
 
   /* ─── Timeline / Chat ────────────────────────────────── */
-  .timeline-item {
-    @apply relative flex gap-3;
-  }
+  .timeline-item { @apply relative flex gap-3; }
 
   .timeline-item::before {
     content: '';
-    @apply absolute left-4 top-8 bottom-0 w-px bg-slate-100;
+    @apply absolute left-4 top-8 bottom-0 w-px;
+    background-color: var(--border);
   }
 
-  .timeline-item:last-child::before {
-    display: none;
-  }
+  .timeline-item:last-child::before { display: none; }
 
-  /* ─── Skeleton loading ───────────────────────────────── */
+  /* ─── Skeleton shimmer (#27) ─────────────────────────── */
   .skeleton {
-    @apply animate-pulse bg-slate-100 rounded-lg;
+    @apply rounded-lg relative overflow-hidden;
+    background-color: var(--bg-muted);
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+    animation: shimmer 1.6s ease-in-out infinite;
+    transform: translateX(-100%);
+  }
+
+  .dark .skeleton::after {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.07) 50%, transparent 100%);
+  }
+
+  @keyframes shimmer {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 
   /* ─── Status indicator dot ───────────────────────────── */
-  .status-dot {
-    @apply inline-block w-2 h-2 rounded-full;
+  .status-dot { @apply inline-block w-2 h-2 rounded-full; }
+
+
+
+  /* ─── Pulse verde em novos cards (#5) ────────────────── */
+  .card-new-pulse {
+    animation: newCardPulse 2.5s ease-out;
+  }
+
+  @keyframes newCardPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
+    50%  { box-shadow: 0 0 0 10px rgba(16,185,129,0.1); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+  }
+
+  /* ─── Reactions emoji (#17) ─────────────────────────── */
+  .reaction-btn {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    display: inline-block;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .reaction-btn:hover { transform: scale(1.5); }
+  .reaction-btn.reacted { filter: drop-shadow(0 0 4px rgba(16,185,129,0.7)); }
+
+  /* ─── Typing indicator (#18) ────────────────────────── */
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+    animation: typingBounce 1.2s ease-in-out infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30%           { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* ─── Waveform animada (#16) ────────────────────────── */
+  .waveform-bar {
+    width: 3px;
+    border-radius: 2px;
+    background-color: currentColor;
+    transform-origin: center;
+  }
+
+  .waveform-bar.playing {
+    animation: waveAnim 0.7s ease-in-out infinite alternate;
+  }
+
+  @keyframes waveAnim {
+    from { transform: scaleY(0.15); }
+    to   { transform: scaleY(1); }
+  }
+
+  .waveform-bar:nth-child(1).playing { animation-delay: 0.00s; }
+  .waveform-bar:nth-child(2).playing { animation-delay: 0.10s; }
+  .waveform-bar:nth-child(3).playing { animation-delay: 0.20s; }
+  .waveform-bar:nth-child(4).playing { animation-delay: 0.05s; }
+  .waveform-bar:nth-child(5).playing { animation-delay: 0.15s; }
+  .waveform-bar:nth-child(6).playing { animation-delay: 0.25s; }
+  .waveform-bar:nth-child(7).playing { animation-delay: 0.12s; }
+  .waveform-bar:nth-child(8).playing { animation-delay: 0.30s; }
+
+  /* ─── Lightbox (#19) ────────────────────────────────── */
+  .lightbox-backdrop {
+    @apply fixed inset-0 z-[200] flex items-center justify-center;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: lightboxIn 0.2s ease-out;
+  }
+
+  @keyframes lightboxIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ─── Toast check SVG animado (#21) ─────────────────── */
+  .toast-check-path {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: drawCheck 0.4s ease-out 0.1s forwards;
+  }
+
+  @keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ─── macOS Notification (#23) ──────────────────────── */
+  .macos-notif { animation: notifIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  .macos-notif.exit { animation: notifOut 0.3s ease-in forwards; }
+
+  @keyframes notifIn {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  @keyframes notifOut {
+    from { transform: translateX(0);    opacity: 1; }
+    to   { transform: translateX(110%); opacity: 0; }
+  }
+
+  /* ─── Audio recording pulse ─────────────────────────── */
+  .recording-pulse { animation: recordPulse 1s ease-in-out infinite; }
+
+  @keyframes recordPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+  }
+
+  /* ─── Audio message bubble ───────────────────────────── */
+  .audio-bubble { @apply flex items-center gap-2 px-3 py-2 rounded-2xl text-sm; }
+
+  /* ─── Theme transition ───────────────────────────────── */
+  * {
+    transition-property: background-color, border-color, color;
+    transition-duration: 0.15s;
+    transition-timing-function: ease;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance { text-wrap: balance; }
+
+  /* Glassmorphism (#25) */
+  .glass {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
   }
 }

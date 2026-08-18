@@ -83,6 +83,9 @@ export const ticketsApi = {
 
   assume: (id: string) =>
     request<any>(`/tickets/${id}/assume`, { method: 'POST' }),
+
+  delete: (id: string) =>
+    request<any>(`/tickets/${id}`, { method: 'DELETE' }),
 };
 
 // ─── Comments ─────────────────────────────────────────────────────────────────
@@ -179,3 +182,17 @@ export const uploadsApi = {
     return res.json();
   },
 };
+
+// ─── Audit ────────────────────────────────────────────────────────────────────
+export const auditApi = {
+  list: (params?: Record<string, string>) => {
+    // filter out undefined or empty values
+    const cleanParams = Object.entries(params || {}).reduce((acc, [k, v]) => {
+      if (v) acc[k] = v;
+      return acc;
+    }, {} as Record<string, string>);
+    const qs = new URLSearchParams(cleanParams).toString();
+    return request<any>(`/audit${qs ? '?' + qs : ''}`);
+  }
+};
+

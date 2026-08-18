@@ -49,12 +49,25 @@ export class TicketsGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
   // Helper methods to emit events
   emitTicketCreated(ticket: any) {
+    console.log("===================================");
+    console.log("Emitindo ticketCreated:", ticket.titulo, ticket.id);
     this.server.to('ti_team').emit('ticketCreated', ticket);
     this.server.to(`user_${ticket.criadoPorId}`).emit('ticketCreated', ticket);
+    console.log("Evento emitido com sucesso para ti_team e user_" + ticket.criadoPorId);
+    console.log("===================================");
   }
 
   emitTicketUpdated(ticket: any) {
     this.server.to('ti_team').emit('ticketUpdated', ticket);
     this.server.to(`user_${ticket.criadoPorId}`).emit('ticketUpdated', ticket);
+  }
+
+  emitCommentCreated(comment: any, ticketCriadoPorId: string) {
+    this.server.to('ti_team').emit('commentCreated', comment);
+    
+    // Colaboradores não devem receber notas internas via WebSocket
+    if (!comment.isNotaInterna) {
+      this.server.to(`user_${ticketCriadoPorId}`).emit('commentCreated', comment);
+    }
   }
 }

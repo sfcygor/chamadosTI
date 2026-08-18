@@ -87,3 +87,13 @@ A IA deve seguir estritamente as diretrizes abaixo ao escrever, refatorar ou rev
 - Segredos mantidos fora do código (variáveis de ambiente ou secret manager).
 
 *A IA deve considerar essas regras imperativas para todas as futuras implementações do sistema AtendeTI.*
+
+---
+
+## REGRA DE REGISTRO DE ALTERAÇÕES (CHANGELOG)
+- Sempre que você criar, modificar ou excluir qualquer código, é obrigatório registrar a alteração no arquivo `CHANGELOG.md` localizado na raiz do projeto.
+- Se o arquivo `CHANGELOG.md` não existir, você deve criá-lo.
+- Adicione as novas entradas preferencialmente no topo ou no formato padrão de changelog, detalhando:
+  - **Data/Hora** (Ex: `## [YYYY-MM-DD]`)
+  - **O que mudou**: Uma breve descrição do que foi adicionado, alterado ou corrigido.
+  - **Arquivos impactados**.

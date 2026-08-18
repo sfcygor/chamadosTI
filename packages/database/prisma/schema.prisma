@@ -1,14 +1,15 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-// NOTE: SQLite does not support native enums, so we use String with @default
+// NOTE: Migrado de SQLite para PostgreSQL (NeonDB)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -30,6 +31,7 @@ model User {
   comentarios       Comment[]
   priorityLogs      PriorityLog[]
   refreshTokens     RefreshToken[]
+  auditLogs         AuditLog[]
 
   @@map("users")
 }
@@ -138,4 +140,24 @@ model Attachment {
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@map("attachments")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  acao        String   // TICKET_CRIADO | TICKET_ATUALIZADO | LOGIN_SUCESSO | etc.
+  tipoRecurso String   // TICKET | USUARIO | COMENTARIO | CATEGORIA | AUTH
+  recursoId   String?
+  descricao   String
+  metadata    String?  // JSON serializado com detalhes extras
+  userEmail   String?  // copiado no momento — persiste se usuário for deletado
+  userPapel   String?
+  userId      String?
+  criadoEm   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([criadoEm])
+  @@index([tipoRecurso])
+  @@index([userId])
+  @@map("audit_logs")
 }

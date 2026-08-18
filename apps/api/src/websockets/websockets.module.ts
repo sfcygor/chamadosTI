@@ -1,13 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TicketsGateway } from './tickets.gateway';
-import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'atendeti-secret',
-    }),
-  ],
+  imports: [AuthModule],
   providers: [TicketsGateway],
   exports: [TicketsGateway],
 })

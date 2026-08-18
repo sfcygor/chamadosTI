@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Priority } from '../common/enums';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class CategoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   findAll() {
     return this.prisma.category.findMany({
@@ -20,22 +24,58 @@ export class CategoriesService {
     });
   }
 
-  async create(data: { nome: string; slaHoras: number }) {
-    return this.prisma.category.create({ data });
+  async create(data: { nome: string; slaHoras: number }, adminUser?: any) {
+    const category = await this.prisma.category.create({ data });
+
+    this.auditService.log({
+      acao: 'CATEGORIA_CRIADA',
+      tipoRecurso: 'CATEGORIA',
+      recursoId: category.id,
+      descricao: `Categoria "${category.nome}" criada (SLA: ${category.slaHoras}h)`,
+      userId: adminUser?.sub,
+      userEmail: adminUser?.email,
+      userPapel: adminUser?.papel,
+    });
+
+    return category;
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: any, adminUser?: any) {
     const cat = await this.prisma.category.findUnique({ where: { id } });
     if (!cat) throw new NotFoundException('Categoria não encontrada');
-    return this.prisma.category.update({ where: { id }, data });
+    const updatedCat = await this.prisma.category.update({ where: { id }, data });
+
+    this.auditService.log({
+      acao: 'CATEGORIA_ATUALIZADA',
+      tipoRecurso: 'CATEGORIA',
+      recursoId: id,
+      descricao: `Categoria "${updatedCat.nome}" atualizada`,
+      userId: adminUser?.sub,
+      userEmail: adminUser?.email,
+      userPapel: adminUser?.papel,
+    });
+
+    return updatedCat;
   }
 
-  async remove(id: string) {
+  async remove(id: string, adminUser?: any) {
     const cat = await this.prisma.category.findUnique({ where: { id } });
     if (!cat) throw new NotFoundException('Categoria não encontrada');
-    return this.prisma.category.update({
+    const removedCat = await this.prisma.category.update({
       where: { id },
       data: { ativo: false },
     });
+
+    this.auditService.log({
+      acao: 'CATEGORIA_APAGADA',
+      tipoRecurso: 'CATEGORIA',
+      recursoId: id,
+      descricao: `Categoria "${cat.nome}" foi desativada (apagada)`,
+      userId: adminUser?.sub,
+      userEmail: adminUser?.email,
+      userPapel: adminUser?.papel,
+    });
+
+    return removedCat;
   }
 }

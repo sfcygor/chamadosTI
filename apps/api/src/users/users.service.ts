@@ -5,11 +5,15 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '../common/enums';
+import { AuditService } from '../audit/audit.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   findAll() {
     return this.prisma.user.findMany({
@@ -68,7 +72,7 @@ export class UsersService {
 
     const senhaHash = await bcrypt.hash(data.senha, 10);
 
-    return this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         nome: data.nome,
         email: data.email,
@@ -85,6 +89,16 @@ export class UsersService {
         criadoEm: true,
       },
     });
+
+    this.auditService.log({
+      acao: 'USUARIO_CRIADO',
+      tipoRecurso: 'USUARIO',
+      recursoId: newUser.id,
+      descricao: `Usuario ${newUser.nome} (${newUser.email}) criado com papel ${newUser.papel}`,
+      metadata: { papel: newUser.papel },
+    });
+
+    return newUser;
   }
 
   async update(id: string, data: any) {
@@ -98,7 +112,7 @@ export class UsersService {
     if (data.ativo !== undefined) updateData.ativo = data.ativo;
     if (data.senha) updateData.senhaHash = await bcrypt.hash(data.senha, 10);
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: updateData,
       select: {
@@ -110,5 +124,14 @@ export class UsersService {
         ativo: true,
       },
     });
+
+    this.auditService.log({
+      acao: 'USUARIO_ATUALIZADO',
+      tipoRecurso: 'USUARIO',
+      recursoId: id,
+      descricao: `Usuario ${updatedUser.nome} (${updatedUser.email}) foi atualizado`,
+    });
+
+    return updatedUser;
   }
 }

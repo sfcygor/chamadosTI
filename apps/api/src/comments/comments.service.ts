@@ -5,10 +5,16 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '../common/enums';
+import { TicketsGateway } from '../websockets/tickets.gateway';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class CommentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private ticketsGateway: TicketsGateway,
+    private auditService: AuditService
+  ) {}
 
   async findByTicket(ticketId: string, user: any) {
     const ticket = await this.prisma.ticket.findUnique({
@@ -68,6 +74,23 @@ export class CommentsService {
         data: { atualizadoEm: new Date() },
       });
     }
+
+    this.auditService.log({
+      acao: isNotaInterna ? 'NOTA_INTERNA_CRIADA' : 'COMENTARIO_CRIADO',
+      tipoRecurso: 'COMENTARIO',
+      recursoId: comment.id,
+      descricao: `${user.email} adicionou ${isNotaInterna ? 'uma nota interna' : 'um comentario'} no ticket #${ticketId.slice(-8).toUpperCase()}`,
+      metadata: { ticketId, isNotaInterna },
+      userId: user.sub,
+      userEmail: user.email,
+      userPapel: user.papel,
+    });
+
+    // Emitir evento websocket para atualização em tempo real
+    this.ticketsGateway.emitCommentCreated(
+      { ...comment, ticket: { atribuidoAId: ticket.atribuidoAId } },
+      ticket.criadoPorId
+    );
 
     return comment;
   }

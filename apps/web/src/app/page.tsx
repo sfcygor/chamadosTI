@@ -17,9 +17,11 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { BlobTextReveal } from '@/components/BlobTextReveal';
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -43,6 +45,8 @@ function ColaboradorDashboard() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const loadData = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -84,6 +88,19 @@ function ColaboradorDashboard() {
     (a, b) => new Date(b.atualizadoEm).getTime() - new Date(a.atualizadoEm).getTime()
   );
 
+  const totalPages = Math.ceil(sortedTickets.length / itemsPerPage);
+  
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
+
+  const currentTickets = sortedTickets.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const abertos = sortedTickets.filter((t) =>
     ['NOVO', 'EM_ANDAMENTO', 'AGUARDANDO_USUARIO'].includes(t.status),
   );
@@ -92,13 +109,27 @@ function ColaboradorDashboard() {
   );
 
   return (
-    <div className="content-wrapper animate-fade-in">
+    <div className="content-wrapper animate-fade-in overflow-hidden">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Olá, {user?.nome.split(' ')[0]}! 👋
-        </h1>
-        <p className="text-slate-500 mt-1">
+      <div className="mb-8 w-full flex flex-col py-2">
+        <div>
+          <BlobTextReveal
+            texts={[`Olá, ${user?.nome.split(' ')[0]}! 👋`]}
+            font={{
+              fontFamily: "Inter",
+              fontWeight: 700,
+              fontSize: "36px",
+              lineHeight: "1.2em",
+              letterSpacing: "-0.04px",
+              textAlign: "left"
+            }}
+            color="#000000"
+            wipeColor="#FFFFFF"
+            revealColor="#116B13"
+            blobPosition={-2}
+          />
+        </div>
+        <p className="text-slate-500 mt-2 text-lg">
           Acompanhe seus chamados ou abra um novo.
         </p>
       </div>
@@ -177,9 +208,33 @@ function ColaboradorDashboard() {
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedTickets.map((ticket) => (
+            {currentTickets.map((ticket) => (
               <TicketCard key={ticket.id} ticket={ticket} />
             ))}
+            
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="btn-secondary py-2 px-3 text-sm gap-1 disabled:opacity-50"
+                >
+                  <ChevronLeft size={16} />
+                  Anterior
+                </button>
+                <span className="text-sm font-medium text-slate-500">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="btn-secondary py-2 px-3 text-sm gap-1 disabled:opacity-50"
+                >
+                  Próximo
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

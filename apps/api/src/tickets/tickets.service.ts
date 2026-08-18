@@ -7,12 +7,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Role, TicketStatus } from '../common/enums';
 import { TicketsGateway } from '../websockets/tickets.gateway';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class TicketsService {
   constructor(
     private prisma: PrismaService,
     private ticketsGateway: TicketsGateway,
+    private auditService: AuditService,
   ) {}
 
   async findAll(user: any, filters: any) {
@@ -130,11 +132,23 @@ export class TicketsService {
     });
 
     this.ticketsGateway.emitTicketCreated(newTicket);
+
+    this.auditService.log({
+      acao: 'TICKET_CRIADO',
+      tipoRecurso: 'TICKET',
+      recursoId: newTicket.id,
+      descricao: `Ticket #${newTicket.id.slice(-8).toUpperCase()} criado na categoria "${newTicket.categoria.nome}"`,
+      userId,
+    });
+
     return newTicket;
   }
 
   async update(id: string, data: any, user: any) {
-    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    const ticket = await this.prisma.ticket.findUnique({ 
+      where: { id },
+      include: { categoria: true }
+    });
     if (!ticket) throw new NotFoundException('Chamado não encontrado');
 
     // Somente agentes/admins podem atualizar campos protegidos
@@ -161,6 +175,17 @@ export class TicketsService {
         },
       });
       updateData.prioridade = data.prioridade;
+
+      this.auditService.log({
+        acao: 'PRIORIDADE_ALTERADA',
+        tipoRecurso: 'TICKET',
+        recursoId: id,
+        descricao: `Prioridade alterada de ${ticket.prioridade} para ${data.prioridade}${data.motivoPrioridade ? ` (Motivo: ${data.motivoPrioridade})` : ''}`,
+        metadata: { de: ticket.prioridade, para: data.prioridade, motivo: data.motivoPrioridade },
+        userId: user.sub,
+        userEmail: user.email,
+        userPapel: user.papel,
+      });
     }
 
     // Atualizar timestamps baseados no status
@@ -181,6 +206,19 @@ export class TicketsService {
       },
     });
 
+    if (ticket.status !== data.status && data.status !== undefined) {
+      this.auditService.log({
+        acao: 'TICKET_ATUALIZADO',
+        tipoRecurso: 'TICKET',
+        recursoId: id,
+        descricao: `Status do ticket alterado para ${data.status}`,
+        metadata: { de: ticket.status, para: data.status },
+        userId: user.sub,
+        userEmail: user.email,
+        userPapel: user.papel,
+      });
+    }
+
     this.ticketsGateway.emitTicketUpdated(updatedTicket);
     return updatedTicket;
   }
@@ -193,11 +231,11 @@ export class TicketsService {
     const ticket = await this.prisma.ticket.findUnique({ where: { id } });
     if (!ticket) throw new NotFoundException('Chamado não encontrado');
 
-    const updatedTicket = await this.prisma.ticket.update({
+    const updated = await this.prisma.ticket.update({
       where: { id },
       data: {
         atribuidoAId: user.sub,
-        status: TicketStatus.EM_ANDAMENTO,
+        status: ticket.status === TicketStatus.NOVO ? TicketStatus.EM_ANDAMENTO : ticket.status,
         assumidoEm: new Date(),
       },
       include: {
@@ -207,8 +245,60 @@ export class TicketsService {
       },
     });
 
-    this.ticketsGateway.emitTicketUpdated(updatedTicket);
-    return updatedTicket;
+    this.auditService.log({
+      acao: 'TICKET_ASSUMIDO',
+      tipoRecurso: 'TICKET',
+      recursoId: id,
+      descricao: `${user.email} assumiu o ticket #${id.slice(-8).toUpperCase()}`,
+      userId: user.sub,
+      userEmail: user.email,
+      userPapel: user.papel,
+    });
+
+    this.ticketsGateway.emitTicketUpdated(updated);
+    return updated;
+  }
+
+
+  async deleteResolved(id: string, adminUser: any) {
+    // Segurança: apenas ADMIN
+    if (adminUser.papel !== Role.ADMIN) {
+      throw new ForbiddenException('Apenas administradores podem apagar chamados');
+    }
+
+    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    if (!ticket) throw new NotFoundException('Chamado não encontrado');
+
+    // Só permite apagar tickets já finalizados
+    const allowedStatuses: string[] = [TicketStatus.RESOLVIDO, TicketStatus.FECHADO];
+    if (!allowedStatuses.includes(ticket.status)) {
+      throw new BadRequestException(
+        'Apenas chamados com status Resolvido ou Fechado podem ser apagados',
+      );
+    }
+
+    // Log de auditoria antes de deletar
+    this.auditService.log({
+      acao: 'TICKET_APAGADO',
+      tipoRecurso: 'TICKET',
+      recursoId: id,
+      descricao: `Ticket #${id.slice(-8).toUpperCase()} (status: ${ticket.status}) apagado definitivamente`,
+      metadata: { titulo: ticket.titulo, status: ticket.status },
+      userId: adminUser.sub,
+      userEmail: adminUser.email,
+      userPapel: adminUser.papel,
+    });
+
+    // SQLite não aplica ON DELETE CASCADE automaticamente sem PRAGMA foreign_keys=ON.
+    // Deletamos as relações manualmente dentro de uma transação para garantir atomicidade.
+    await this.prisma.$transaction([
+      this.prisma.priorityLog.deleteMany({ where: { ticketId: id } }),
+      this.prisma.attachment.deleteMany({ where: { ticketId: id } }),
+      this.prisma.comment.deleteMany({ where: { ticketId: id } }),
+      this.prisma.ticket.delete({ where: { id } }),
+    ]);
+
+    return { message: 'Chamado apagado com sucesso' };
   }
 
 

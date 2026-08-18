@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -103,5 +104,9 @@ export class TicketsController {
     return this.ticketsService.assume(id, req.user);
   }
 
+  @Delete(':id')
+  remove(@Param('id') id: string, @Request() req) {
+    return this.ticketsService.deleteResolved(id, req.user);
+  }
 
 }

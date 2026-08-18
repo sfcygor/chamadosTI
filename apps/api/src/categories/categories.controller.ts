@@ -56,21 +56,21 @@ export class CategoriesController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Post()
-  create(@Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(dto);
+  create(@Body() dto: CreateCategoryDto, @Request() req) {
+    return this.categoriesService.create(dto, req.user);
   }
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
-    return this.categoriesService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto, @Request() req) {
+    return this.categoriesService.update(id, dto, req.user);
   }
 
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(id);
+  remove(@Param('id') id: string, @Request() req) {
+    return this.categoriesService.remove(id, req.user);
   }
 }

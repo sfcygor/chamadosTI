@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { AuditModule } from '../audit/audit.module';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -13,6 +14,7 @@ const publicKey = fs.existsSync(path.join(process.cwd(), 'keys/public.pem')) ? f
 @Module({
   imports: [
     PassportModule,
+    AuditModule,
     JwtModule.register({
       privateKey: privateKey || (process.env.JWT_PRIVATE_KEY ? process.env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n') : 'fallback_for_compilation'),
       publicKey: publicKey || (process.env.JWT_PUBLIC_KEY ? process.env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n') : 'fallback_for_compilation'),
@@ -24,6 +26,6 @@ const publicKey = fs.existsSync(path.join(process.cwd(), 'keys/public.pem')) ? f
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

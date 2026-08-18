@@ -1,0 +1,12 @@
+[build]
+  builder = "nixpacks"
+  buildCommand = "npm run build"
+
+[deploy]
+  startCommand = "node dist/main"
+  healthcheckPath = "/api"
+  restartPolicyType = "on_failure"
+  restartPolicyMaxRetries = 3
+
+[[services]]
+  name = "atendeti-api"
