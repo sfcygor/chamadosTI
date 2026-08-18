@@ -116,7 +116,7 @@ export default function AuditPage() {
   if (!user || user.papel !== 'ADMIN') return null;
 
   return (
-    <AppLayout title="Auditoria">
+    <AppLayout>
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Header & Actions */}
